@@ -1,0 +1,22 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# These files are text and should be normalized (convert to LF on checkout)
+*.css text
+*.html text
+*.js text
+*.json text
+*.md text
+*.ts text
+*.tsx text
+*.jsx text
+*.xml text
+
+# These files are binary and should be left untouched
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
