@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useDebounce } from 'use-debounce';
+import { useDebounce } from 'use-debounce'; // Використовуємо useDebounce замість useDebouncedValue
 import css from './SearchBox.module.css';
 
 export interface SearchBoxProps {
@@ -8,7 +8,7 @@ export interface SearchBoxProps {
 
 const SearchBox: React.FC<SearchBoxProps> = ({ onSearch }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 500); // Правильний хук
 
   useEffect(() => {
     onSearch(debouncedSearchTerm);

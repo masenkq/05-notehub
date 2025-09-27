@@ -27,17 +27,17 @@ export interface FetchNotesResponse {
 
 export const noteService = {
   fetchNotes: async (params: FetchNotesParams = {}): Promise<FetchNotesResponse> => {
-    const response = await api.get('/notes', { params });
+    const response = await api.get<FetchNotesResponse>('/notes', { params }); // Додано дженерик
     return response.data;
   },
 
   createNote: async (noteData: CreateNoteData): Promise<Note> => {
-    const response = await api.post('/notes', noteData);
+    const response = await api.post<Note>('/notes', noteData); // Додано дженерик
     return response.data;
   },
 
   deleteNote: async (id: string): Promise<Note> => {
-    const response = await api.delete(`/notes/${id}`);
+    const response = await api.delete<Note>(`/notes/${id}`); // Додано дженерик
     return response.data;
   },
 };
