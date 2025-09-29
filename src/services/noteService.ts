@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Note, CreateNoteData } from '../types/note';
+import type{ Note } from '../types/note';
 
 const BASE_URL = 'https://notehub-public.goit.study/api';
 const token = import.meta.env.VITE_NOTEHUB_TOKEN;
@@ -11,33 +11,47 @@ const api = axios.create({
   },
 });
 
+export interface FetchNotesResponse {
+  notes: Note[];
+  totalPages: number;
+  currentPage: number;
+  totalNotes: number;
+}
+
 export interface FetchNotesParams {
   page?: number;
   perPage?: number;
   search?: string;
 }
 
-export interface FetchNotesResponse {
-  data: Note[];
-  total: number;
-  page: number;
-  perPage: number;
-  totalPages: number;
+export interface CreateNoteParams {
+  title: string;
+  content: string;
+  tag: string;
 }
 
-export const noteService = {
-  fetchNotes: async (params: FetchNotesParams = {}): Promise<FetchNotesResponse> => {
-    const response = await api.get<FetchNotesResponse>('/notes', { params }); // Додано дженерик
-    return response.data;
-  },
+export interface DeleteNoteResponse {
+  id: string;
+  deleted: boolean;
+}
 
-  createNote: async (noteData: CreateNoteData): Promise<Note> => {
-    const response = await api.post<Note>('/notes', noteData); // Додано дженерик
-    return response.data;
-  },
+export const fetchNotes = async (params: FetchNotesParams = {}): Promise<FetchNotesResponse> => {
+  const response = await api.get<FetchNotesResponse>('/notes', { 
+    params: {
+      page: params.page || 1,
+      perPage: params.perPage || 12,
+      search: params.search
+    } 
+  });
+  return response.data;
+};
 
-  deleteNote: async (id: string): Promise<Note> => {
-    const response = await api.delete<Note>(`/notes/${id}`); // Додано дженерик
-    return response.data;
-  },
+export const createNote = async (noteData: CreateNoteParams): Promise<Note> => {
+  const response = await api.post<Note>('/notes', noteData);
+  return response.data;
+};
+
+export const deleteNote = async (id: string): Promise<DeleteNoteResponse> => {
+  const response = await api.delete<DeleteNoteResponse>(`/notes/${id}`);
+  return response.data;
 };

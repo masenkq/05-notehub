@@ -1,38 +1,53 @@
-import React from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query'; // Додано TanStack Query
-import { noteService } from '../../services/noteService';
-import type { Note } from '../../types/note';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { fetchNotes, deleteNote } from '../../services/noteService';
+import type{ Note } from '../../types/note';
 import css from './NoteList.module.css';
 
-export interface NoteListProps {
-  notes: Note[];
+interface NoteListProps {
+  searchQuery: string;
+  currentPage: number;
 }
 
-const NoteList: React.FC<NoteListProps> = ({ notes }) => {
+function NoteList({ searchQuery, currentPage }: NoteListProps) {
   const queryClient = useQueryClient();
+  
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['notes', currentPage, searchQuery],
+    queryFn: () => fetchNotes({ 
+      page: currentPage, 
+      perPage: 12, 
+      search: searchQuery 
+    }),
+  });
 
   const deleteMutation = useMutation({
-    mutationFn: noteService.deleteNote,
+    mutationFn: deleteNote,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
     },
   });
 
-  const handleDeleteNote = (id: string) => {
-    deleteMutation.mutate(id);
+  const handleDelete = (id: string): void => {
+    if (window.confirm('Are you sure you want to delete this note?')) {
+      deleteMutation.mutate(id);
+    }
   };
+
+  if (isLoading) return <div className={css.loading}>Loading notes...</div>;
+  if (error) return <div className={css.error}>Error loading notes. Please try again.</div>;
+  if (!data?.notes.length) return null;
 
   return (
     <ul className={css.list}>
-      {notes.map((note) => (
+      {data.notes.map((note: Note) => (
         <li key={note.id} className={css.listItem}>
           <h2 className={css.title}>{note.title}</h2>
           <p className={css.content}>{note.content}</p>
           <div className={css.footer}>
             <span className={css.tag}>{note.tag}</span>
             <button 
-              className={css.button}
-              onClick={() => handleDeleteNote(note.id)}
+              className={css.button} 
+              onClick={() => handleDelete(note.id)}
               disabled={deleteMutation.isPending}
             >
               {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
@@ -42,6 +57,6 @@ const NoteList: React.FC<NoteListProps> = ({ notes }) => {
       ))}
     </ul>
   );
-};
+}
 
 export default NoteList;

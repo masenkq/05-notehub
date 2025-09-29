@@ -1,90 +1,91 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useDebouncedCallback } from 'use-debounce'; // Додано дебаунс
-import { noteService } from '../../services/noteService';
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
+import { useDebouncedCallback } from 'use-debounce';
 import NoteList from '../NoteList/NoteList';
 import SearchBox from '../SearchBox/SearchBox';
 import Pagination from '../Pagination/Pagination';
 import Modal from '../Modal/Modal';
 import NoteForm from '../NoteForm/NoteForm';
+import { fetchNotes } from '../../services/noteService';
 import css from './App.module.css';
 
-function App() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000,
+    },
+  },
+});
+
+function AppContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Додано дебаунс для пошуку
-  const debouncedSearch = useDebouncedCallback((term: string) => {
-    setSearchTerm(term);
+  const debouncedSearch = useDebouncedCallback((query: string) => {
+    setSearchQuery(query);
     setCurrentPage(1);
-  }, 500);
+  }, 300);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['notes', currentPage, searchTerm],
-    queryFn: () => noteService.fetchNotes({
-      page: currentPage,
-      perPage: 12,
-      search: searchTerm || undefined,
+  const { data, isLoading, isPlaceholderData } = useQuery({
+    queryKey: ['notes', currentPage, searchQuery],
+    queryFn: () => fetchNotes({ 
+      page: currentPage, 
+      perPage: 12, 
+      search: searchQuery 
     }),
+    placeholderData: (previousData) => previousData,
   });
 
-  const handleSearch = (term: string) => {
-    debouncedSearch(term);
+  const handleOpenModal = (): void => setIsModalOpen(true);
+  const handleCloseModal = (): void => setIsModalOpen(false);
+
+  const handleSearch = (query: string): void => {
+    debouncedSearch(query);
   };
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = (page: number): void => {
     setCurrentPage(page);
   };
 
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
-
-  if (error) {
-    return <div className={css.error}>Error loading notes: {(error as Error).message}</div>;
-  }
-
-  const notes = data?.data || [];
-  const totalPages = data?.totalPages || 0;
+  const shouldShowPagination = data && data.totalPages > 1;
+  const shouldShowNoteList = data && data.notes.length > 0;
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
         <SearchBox onSearch={handleSearch} />
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
+        {shouldShowPagination && (
+          <Pagination 
+            currentPage={currentPage} 
+            onPageChange={handlePageChange} 
+            searchQuery={searchQuery}
           />
         )}
-        <button 
-          className={css.button}
-          onClick={handleOpenModal}
-        >
+        <button className={css.button} onClick={handleOpenModal}>
           Create note +
         </button>
       </header>
-
-      {isLoading ? (
-        <div className={css.loading}>Loading...</div>
-      ) : notes.length > 0 ? (
-        <NoteList notes={notes} />
-      ) : (
-        <div className={css.empty}>No notes found</div>
+      
+      {shouldShowNoteList && (
+        <NoteList searchQuery={searchQuery} currentPage={currentPage} />
       )}
-
+      
       {isModalOpen && (
         <Modal onClose={handleCloseModal}>
-          <NoteForm onCancel={handleCloseModal} />
+          <NoteForm onClose={handleCloseModal} />
         </Modal>
       )}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+    </QueryClientProvider>
   );
 }
 
