@@ -28,7 +28,7 @@ function AppContent() {
     setCurrentPage(1);
   }, 300);
 
-  const { data, isLoading, isPlaceholderData } = useQuery({
+  const { data } = useQuery({
     queryKey: ['notes', currentPage, searchQuery],
     queryFn: () => fetchNotes({ 
       page: currentPage, 
