@@ -20,8 +20,7 @@ const validationSchema = Yup.object({
     .max(50, 'Title must not exceed 50 characters')
     .required('Title is required'),
   content: Yup.string()
-    .max(500, 'Content must not exceed 500 characters')
-    .required('Content is required'),
+    .max(500, 'Content must not exceed 500 characters'),
   tag: Yup.string()
     .oneOf(['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'], 'Invalid tag')
     .required('Tag is required'),
@@ -49,10 +48,11 @@ function NoteForm({ onClose }: NoteFormProps) {
 
   const handleSubmit = (values: FormValues): void => {
     console.log('Submitting note:', values);
+    // Odesíláme pouze title a content, tag API pravděpodobně nepřijímá
     createMutation.mutate({ 
       title: values.title.trim(), 
-      content: values.content.trim(),
-      tag: values.tag
+      content: values.content.trim()
+      // tag se neposílá - API ho pravděpodobně přiřadí automaticky
     });
   };
 
@@ -79,7 +79,7 @@ function NoteForm({ onClose }: NoteFormProps) {
           </div>
 
           <div className={css.formGroup}>
-            <label htmlFor="content">Content *</label>
+            <label htmlFor="content">Content</label>
             <Field
               as="textarea"
               id="content"

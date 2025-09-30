@@ -32,7 +32,7 @@ function AppContent() {
     queryKey: ['notes', currentPage, searchQuery],
     queryFn: () => fetchNotes({ 
       page: currentPage, 
-      perPage: 12, 
+      per_page: 12, 
       search: searchQuery 
     }),
     placeholderData: (previousData) => previousData,
@@ -49,8 +49,9 @@ function AppContent() {
     setCurrentPage(page);
   };
 
-  const shouldShowPagination = data && data.totalPages > 1;
-  const shouldShowNoteList = data && data.notes.length > 0;
+  const totalPages = data ? Math.ceil(data.total / data.per_page) : 0;
+  const shouldShowPagination = totalPages > 1;
+  const shouldShowNoteList = data && data.results.length > 0;
 
   return (
     <div className={css.app}>
@@ -58,9 +59,9 @@ function AppContent() {
         <SearchBox onSearch={handleSearch} />
         {shouldShowPagination && (
           <Pagination 
-            currentPage={currentPage} 
-            onPageChange={handlePageChange} 
-            searchQuery={searchQuery}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
           />
         )}
         <button className={css.button} onClick={handleOpenModal}>
@@ -69,7 +70,7 @@ function AppContent() {
       </header>
       
       {shouldShowNoteList && (
-        <NoteList searchQuery={searchQuery} currentPage={currentPage} />
+        <NoteList notes={data.results} />
       )}
       
       {isModalOpen && (

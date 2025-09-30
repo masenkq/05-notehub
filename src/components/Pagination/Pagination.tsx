@@ -1,22 +1,13 @@
-import { useQuery } from '@tanstack/react-query';
 import ReactPaginate from 'react-paginate';
-import { fetchNotes } from '../../services/noteService';
 import css from './Pagination.module.css';
 
 interface PaginationProps {
   currentPage: number;
+  totalPages: number;
   onPageChange: (page: number) => void;
-  searchQuery: string;
 }
 
-function Pagination({ currentPage, onPageChange, searchQuery }: PaginationProps) {
-  const { data } = useQuery({
-    queryKey: ['notes', currentPage, searchQuery],
-    queryFn: () => fetchNotes({ page: currentPage, perPage: 12, search: searchQuery }),
-  });
-
-  const totalPages = data?.totalPages || 0;
-
+function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
   if (totalPages <= 1) return null;
 
   const handlePageClick = (event: { selected: number }): void => {

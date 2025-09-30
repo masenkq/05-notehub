@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type{ Note } from '../types/note';
+import type { Note } from '../types/note';
 
 const BASE_URL = 'https://notehub-public.goit.study/api';
 const token = import.meta.env.VITE_NOTEHUB_TOKEN;
@@ -12,22 +12,21 @@ const api = axios.create({
 });
 
 export interface FetchNotesResponse {
-  notes: Note[];
-  totalPages: number;
-  currentPage: number;
-  totalNotes: number;
+  results: Note[];
+  total: number;
+  page: number;
+  per_page: number;
 }
 
 export interface FetchNotesParams {
   page?: number;
-  perPage?: number;
+  per_page?: number;
   search?: string;
 }
 
 export interface CreateNoteParams {
   title: string;
   content: string;
-  tag: string;
 }
 
 export interface DeleteNoteResponse {
@@ -39,7 +38,7 @@ export const fetchNotes = async (params: FetchNotesParams = {}): Promise<FetchNo
   const response = await api.get<FetchNotesResponse>('/notes', { 
     params: {
       page: params.page || 1,
-      perPage: params.perPage || 12,
+      per_page: params.per_page || 12,
       search: params.search
     } 
   });
