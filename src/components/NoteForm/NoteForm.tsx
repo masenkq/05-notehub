@@ -48,11 +48,10 @@ function NoteForm({ onClose }: NoteFormProps) {
 
   const handleSubmit = (values: FormValues): void => {
     console.log('Submitting note:', values);
-    // Odesíláme pouze title a content, tag API pravděpodobně nepřijímá
     createMutation.mutate({ 
       title: values.title.trim(), 
-      content: values.content.trim()
-      // tag se neposílá - API ho pravděpodobně přiřadí automaticky
+      content: values.content.trim(),
+      tag: values.tag // ← PŘIDÁNO: tag se nyní posílá do API
     });
   };
 

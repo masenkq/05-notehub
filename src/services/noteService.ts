@@ -12,33 +12,35 @@ const api = axios.create({
 });
 
 export interface FetchNotesResponse {
-  results: Note[];
-  total: number;
-  page: number;
-  per_page: number;
+  notes: Note[];
+  totalPages: number;
 }
 
 export interface FetchNotesParams {
   page?: number;
-  per_page?: number;
+  perPage?: number;
   search?: string;
 }
 
 export interface CreateNoteParams {
   title: string;
   content: string;
+  tag: string;
 }
 
 export interface DeleteNoteResponse {
   id: string;
-  deleted: boolean;
+  title: string;
+  content: string;
+  tag: string;
+  created: string;
 }
 
 export const fetchNotes = async (params: FetchNotesParams = {}): Promise<FetchNotesResponse> => {
   const response = await api.get<FetchNotesResponse>('/notes', { 
     params: {
       page: params.page || 1,
-      per_page: params.per_page || 12,
+      perPage: params.perPage || 12,
       search: params.search
     } 
   });
