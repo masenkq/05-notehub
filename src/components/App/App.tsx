@@ -32,7 +32,7 @@ function AppContent() {
     queryKey: ['notes', currentPage, searchQuery],
     queryFn: () => fetchNotes({ 
       page: currentPage, 
-      perPage: 12,  // ← změněno na perPage
+      per_page: 12,  // ← změněno na per_page
       search: searchQuery 
     }),
     placeholderData: (previousData) => previousData,
@@ -49,9 +49,9 @@ function AppContent() {
     setCurrentPage(page);
   };
 
-  const totalPages = data?.totalPages || 0;  // ← použito totalPages přímo z API
+  const totalPages = data?.totalPages || 0;
   const shouldShowPagination = totalPages > 1;
-  const shouldShowNoteList = data && data.notes.length > 0;  // ← data.notes místo data.results
+  const shouldShowNoteList = data && data.notes.length > 0;
 
   return (
     <div className={css.app}>
@@ -70,7 +70,7 @@ function AppContent() {
       </header>
       
       {shouldShowNoteList && (
-        <NoteList notes={data.notes} />  // ← data.notes místo data.results
+        <NoteList notes={data.notes} />
       )}
       
       {isModalOpen && (

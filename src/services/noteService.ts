@@ -36,16 +36,7 @@ export interface DeleteNoteResponse {
   created: string;
 }
 
-export const fetchNotes = async (params: FetchNotesParams = {}): Promise<FetchNotesResponse> => {
-  const response = await api.get<FetchNotesResponse>('/notes', { 
-    params: {
-      page: params.page || 1,
-      perPage: params.perPage || 12,
-      search: params.search
-    } 
-  });
-  return response.data;
-};
+
 
 export const createNote = async (noteData: CreateNoteParams): Promise<Note> => {
   const response = await api.post<Note>('/notes', noteData);
@@ -54,5 +45,24 @@ export const createNote = async (noteData: CreateNoteParams): Promise<Note> => {
 
 export const deleteNote = async (id: string): Promise<DeleteNoteResponse> => {
   const response = await api.delete<DeleteNoteResponse>(`/notes/${id}`);
+  return response.data;
+};
+
+export const fetchNotes = async (params: FetchNotesParams = {}): Promise<FetchNotesResponse> => {
+  console.log('🔍 Fetching notes with params:', params);
+  const response = await api.get('/notes', { 
+    params: {
+      page: params.page || 1,
+      perPage: params.perPage || 12,
+      search: params.search
+    } 
+  });
+  console.log('📦 API Response:', response.data);
+  console.log('📊 Response structure:', {
+    hasNotes: !!response.data.notes,
+    notesCount: response.data.notes?.length,
+    totalPages: response.data.totalPages,
+    fullResponse: response.data
+  });
   return response.data;
 };
