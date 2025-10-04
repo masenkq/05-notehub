@@ -18,76 +18,62 @@ const queryClient = new QueryClient({
   },
 });
 
-function AppContent() {
+function App() {
+  const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const debouncedSearch = useDebouncedCallback((query: string) => {
-    setSearchQuery(query);
-    setCurrentPage(1);
-  }, 300);
 
   const { data } = useQuery({
-    queryKey: ['notes', currentPage, searchQuery],
-    queryFn: () => fetchNotes({ 
-      page: currentPage, 
-      per_page: 12,  // ← změněno na per_page
-      search: searchQuery 
-    }),
+    queryKey: ['notes', searchQuery, currentPage],
+    queryFn: () => fetchNotes(searchQuery, currentPage), // ← 2 argumenty, ne objekt
     placeholderData: (previousData) => previousData,
   });
 
-  const handleOpenModal = (): void => setIsModalOpen(true);
-  const handleCloseModal = (): void => setIsModalOpen(false);
-
-  const handleSearch = (query: string): void => {
-    debouncedSearch(query);
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
   };
 
-  const handlePageChange = (page: number): void => {
-    setCurrentPage(page);
-  };
+  const changeSearchQuery = useDebouncedCallback((newQuery: string) => {
+    setCurrentPage(1);
+    setSearchQuery(newQuery);
+  }, 300);
 
-  const totalPages = data?.totalPages || 0;
-  const shouldShowPagination = totalPages > 1;
-  const shouldShowNoteList = data && data.notes.length > 0;
+  const totalPages = data?.totalPages ?? 0;
+  const notes = data?.notes ?? [];
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        <SearchBox onSearch={handleSearch} />
-        {shouldShowPagination && (
-          <Pagination 
-            currentPage={currentPage}
+        <SearchBox onSearch={changeSearchQuery} />
+        {totalPages > 1 && (
+          <Pagination
             totalPages={totalPages}
-            onPageChange={handlePageChange}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
           />
         )}
-        <button className={css.button} onClick={handleOpenModal}>
+        <button className={css.button} onClick={toggleModal}>
           Create note +
         </button>
       </header>
-      
-      {shouldShowNoteList && (
-        <NoteList notes={data.notes} />
-      )}
-      
+
       {isModalOpen && (
-        <Modal onClose={handleCloseModal}>
-          <NoteForm onClose={handleCloseModal} />
+        <Modal onClose={toggleModal}>
+          <NoteForm onClose={toggleModal} />
         </Modal>
       )}
+
+      {notes.length > 0 && <NoteList notes={notes} />}
     </div>
   );
 }
 
-function App() {
+function AppWrapper() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContent />
+      <App />
     </QueryClientProvider>
   );
 }
 
-export default App;
+export default AppWrapper;
