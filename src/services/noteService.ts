@@ -16,30 +16,22 @@ export interface FetchNotesResponse {
   totalPages: number;
 }
 
-export interface FetchNotesParams {
-  page?: number;
-  per_page?: number;
-  search?: string;
-}
+export const fetchNotes = async (searchText: string, page: number): Promise<FetchNotesResponse> => {
+  const response = await api.get<FetchNotesResponse>('/notes', {
+    params: {
+      ...(searchText !== '' && { search: searchText }),
+      page,
+      perPage: 12,  // ← změněno na perPage
+    },
+  });
+  return response.data;
+};
 
 export interface CreateNoteParams {
   title: string;
   content: string;
   tag: string;
 }
-
-// DELETE: Odstraněn DeleteNoteResponse a použijeme přímo Note
-
-export const fetchNotes = async (params: FetchNotesParams = {}): Promise<FetchNotesResponse> => {
-  const response = await api.get<FetchNotesResponse>('/notes', { 
-    params: {
-      page: params.page || 1,
-      per_page: params.per_page || 12,
-      search: params.search
-    } 
-  });
-  return response.data;
-};
 
 export const createNote = async (noteData: CreateNoteParams): Promise<Note> => {
   const response = await api.post<Note>('/notes', noteData);
