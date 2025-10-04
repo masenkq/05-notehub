@@ -18,7 +18,7 @@ export interface FetchNotesResponse {
 
 export interface FetchNotesParams {
   page?: number;
-  perPage?: number;
+  per_page?: number;
   search?: string;
 }
 
@@ -28,41 +28,25 @@ export interface CreateNoteParams {
   tag: string;
 }
 
-export interface DeleteNoteResponse {
-  id: string;
-  title: string;
-  content: string;
-  tag: string;
-  created: string;
-}
+// DELETE: Odstraněn DeleteNoteResponse a použijeme přímo Note
 
-
+export const fetchNotes = async (params: FetchNotesParams = {}): Promise<FetchNotesResponse> => {
+  const response = await api.get<FetchNotesResponse>('/notes', { 
+    params: {
+      page: params.page || 1,
+      per_page: params.per_page || 12,
+      search: params.search
+    } 
+  });
+  return response.data;
+};
 
 export const createNote = async (noteData: CreateNoteParams): Promise<Note> => {
   const response = await api.post<Note>('/notes', noteData);
   return response.data;
 };
 
-export const deleteNote = async (id: string): Promise<DeleteNoteResponse> => {
-  const response = await api.delete<DeleteNoteResponse>(`/notes/${id}`);
-  return response.data;
-};
-
-export const fetchNotes = async (params: FetchNotesParams = {}): Promise<FetchNotesResponse> => {
-  console.log('🔍 Fetching notes with params:', params);
-  const response = await api.get('/notes', { 
-    params: {
-      page: params.page || 1,
-      perPage: params.perPage || 12,
-      search: params.search
-    } 
-  });
-  console.log('📦 API Response:', response.data);
-  console.log('📊 Response structure:', {
-    hasNotes: !!response.data.notes,
-    notesCount: response.data.notes?.length,
-    totalPages: response.data.totalPages,
-    fullResponse: response.data
-  });
+export const deleteNote = async (id: string): Promise<Note> => {
+  const response = await api.delete<Note>(`/notes/${id}`);
   return response.data;
 };
